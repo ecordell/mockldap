@@ -1,6 +1,7 @@
 from collections import defaultdict
 
 from ldap.cidict import cidict
+from six import iteritems, itervalues
 
 from .ldapobject import LDAPObject
 from .recording import SeedRequired  # noqa
@@ -120,7 +121,7 @@ class MockLdap(object):
         If you called :meth:`~mockldap.MockLdap.start` multiple times, this is
         the easiest way to reset everything.
         """
-        for patcher in self.patchers.itervalues():
+        for patcher in itervalues(self.patchers):
             patcher.stop()
 
         self.patchers.clear()
@@ -136,5 +137,5 @@ class MockLdap(object):
 
 
 # Map a dictionary by applying a function to each key/value.
-map_keys = lambda f, d: dict((f(k), v) for k, v in d.iteritems())
-map_values = lambda f, d: dict((k, f(v)) for k, v in d.iteritems())
+map_keys = lambda f, d: dict((f(k), v) for k, v in iteritems(d))
+map_values = lambda f, d: dict((k, f(v)) for k, v in iteritems(d))

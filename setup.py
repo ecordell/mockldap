@@ -13,7 +13,7 @@ else:
 setup(
     name='mockldap',
     version='0.1.8',
-    description=u"A simple mock implementation of python-ldap.",
+    description=u"A simple mock implementation of pyldap.",
     long_description=open('README').read(),
     url='http://bitbucket.org/psagers/mockldap/',
     author='Peter Sagerson',
@@ -33,9 +33,10 @@ setup(
     ],
     keywords=['mock', 'ldap'],
     install_requires=[
-        'python-ldap',
+        'pyldap',
         'funcparserlib==0.3.6',
         'mock',
+        'six',
     ],
     extras_require={
         'passlib': ['passlib>=1.6.1'],

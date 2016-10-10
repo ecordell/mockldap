@@ -1,6 +1,8 @@
 """
 Simple filter expression parser based on funcparserlib.
 """
+from __future__ import print_function
+
 from functools import partial
 import ldap
 import re
@@ -185,7 +187,7 @@ def gen_tokens(substrs):
 def parse(filterstr):
     try:
         return ldap_filter.parse(tokenize(filterstr))
-    except NoParseError, e:
+    except NoParseError as e:
         raise ldap.FILTER_ERROR(e)
 
 
@@ -226,4 +228,4 @@ if __name__ == '__main__':
 
     for filterstr in sys.argv[1:]:
         pprint(tokenize(filterstr))
-        print parse(filterstr).unparse()
+        print(parse(filterstr).unparse())

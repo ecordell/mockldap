@@ -5,6 +5,8 @@ from copy import deepcopy
 import ldap
 from ldap.cidict import cidict
 import ldap.dn
+from six import iterkeys, iteritems
+from six.moves import range
 
 try:
     from passlib.hash import ldap_md5_crypt
@@ -213,21 +215,21 @@ class LDAPObject(RecordableMethods):
         # Find directory entries within the requested scope
         base_parts = ldap.dn.explode_dn(base.lower())
         base_len = len(base_parts)
-        dn_parts = dict((dn, ldap.dn.explode_dn(dn)) for dn in self.directory.iterkeys())
+        dn_parts = dict((dn, ldap.dn.explode_dn(dn)) for dn in iterkeys(self.directory))
 
         if scope == ldap.SCOPE_BASE:
-            dns = (dn for dn, parts in dn_parts.iteritems() if parts == base_parts)
+            dns = (dn for dn, parts in iteritems(dn_parts) if parts == base_parts)
         elif scope == ldap.SCOPE_ONELEVEL:
-            dns = (dn for dn, parts in dn_parts.iteritems() if parts[1:] == base_parts)
+            dns = (dn for dn, parts in iteritems(dn_parts) if parts[1:] == base_parts)
         elif scope == ldap.SCOPE_SUBTREE:
-            dns = (dn for dn, parts in dn_parts.iteritems() if parts[-base_len:] == base_parts)
+            dns = (dn for dn, parts in iteritems(dn_parts) if parts[-base_len:] == base_parts)
         else:
             raise ValueError(u"Unrecognized scope: {0}".format(scope))
 
         # Apply the filter expression
         try:
             filter_expr = parse(filterstr)
-        except UnsupportedOp, e:
+        except UnsupportedOp as e:
             raise SeedRequired(e)
 
         results = ((dn, self.directory[dn]) for dn in dns
@@ -235,11 +237,11 @@ class LDAPObject(RecordableMethods):
 
         # Apply attribute filtering, if any
         if attrlist is not None:
-            results = ((dn, dict((attr, values) for attr, values in attrs.iteritems() if attr in attrlist))
+            results = ((dn, dict((attr, values) for attr, values in iteritems(attrs) if attr in attrlist))
                        for dn, attrs in results)
 
         if attrsonly:
-            results = ((dn, dict((attr, []) for attr in attrs.iterkeys()))
+            results = ((dn, dict((attr, []) for attr in iterkeys(attrs)))
                        for dn, attrs in results)
 
         results_list = list(results)
@@ -367,7 +369,7 @@ class LDAPObject(RecordableMethods):
         return len(self.async_results) - 1
 
     def _pop_async_result(self, msgid):
-        if msgid in xrange(len(self.async_results)):
+        if msgid in range(len(self.async_results)):
             value = self.async_results[msgid]
             self.async_results[msgid] = None
         else:

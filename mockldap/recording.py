@@ -4,8 +4,13 @@ Tools for recording method calls and seeding return values.
 from collections import defaultdict
 from copy import deepcopy
 from functools import partial
-from itertools import ifilter
-import types
+from six.moves import filter as ifilter
+from six import next, iteritems
+
+try:
+    from types import TypeType
+except ImportError:
+    TypeType = type
 
 
 class SeedRequired(Exception):
@@ -110,11 +115,11 @@ class RecordedMethod(object):
         self._record(args, kwargs)
 
         try:
-            value = self._seeded_values(args, kwargs).next()[1]
+            value = next(self._seeded_values(args, kwargs))[1]
         except StopIteration:
             try:
                 value = self.func(self.instance, *args, **kwargs)
-            except SeedRequired, e:
+            except SeedRequired as e:
                 raise SeedRequired("Seed required for %s: %s" %
                                    (self._call_repr(*args, **kwargs), e))
         else:
@@ -179,7 +184,7 @@ class RecordedMethod(object):
 
     def _call_repr(self, *args, **kwargs):
         arglist = [repr(arg) for arg in args]
-        arglist.extend('%s=%r' % item for item in kwargs.iteritems())
+        arglist.extend('%s=%r' % item for item in iteritems(kwargs))
 
         return "%s(%s)" % (self.func.__name__, ", ".join(arglist))
 
@@ -187,7 +192,7 @@ class RecordedMethod(object):
         if isinstance(value, Exception):
             return True
 
-        if (isinstance(value, types.TypeType) and issubclass(value, Exception)):
+        if (isinstance(value, TypeType) and issubclass(value, Exception)):
             return True
 
         return False
